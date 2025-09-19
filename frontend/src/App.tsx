@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import ChatPage from './pages/ChatPage';
 import EmotionDetectionPage from './pages/EmotionDetectionPage';
+import MoodJournalPage from './pages/MoodJournalPage';
 
 function App() {
   return (
@@ -47,6 +48,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EmotionDetectionPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mood-journal" 
+              element={
+                <ProtectedRoute>
+                  <MoodJournalPage />
                 </ProtectedRoute>
               } 
             />

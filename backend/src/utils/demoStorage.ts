@@ -33,10 +33,30 @@ interface DemoEmotion {
   userId: string;
 }
 
+interface DemoMoodEntry {
+  id: string;
+  moodScore: number;
+  text: string;
+  textAnalysis: number | null;
+  timestamp: Date;
+  userId: string;
+}
+
+interface DemoCrisisAlert {
+  id: string;
+  riskLevel: 'low' | 'medium' | 'high';
+  triggerData: any;
+  resolved: boolean;
+  timestamp: Date;
+  userId: string;
+}
+
 class DemoStorage {
   private users: Map<string, DemoUser> = new Map();
   private conversations: DemoConversation[] = [];
   private emotions: DemoEmotion[] = [];
+  private moodEntries: DemoMoodEntry[] = [];
+  private crisisAlerts: DemoCrisisAlert[] = [];
 
   // User operations
   async createUser(userData: {
@@ -114,6 +134,48 @@ class DemoStorage {
 
   async getEmotionsByUserId(userId: string): Promise<DemoEmotion[]> {
     return this.emotions.filter(emotion => emotion.userId === userId);
+  }
+
+  // Mood entry operations
+  async saveMoodEntry(moodData: {
+    moodScore: number;
+    text: string;
+    textAnalysis: number | null;
+    userId: string;
+  }): Promise<DemoMoodEntry> {
+    const moodEntry: DemoMoodEntry = {
+      id: uuidv4(),
+      ...moodData,
+      timestamp: new Date(),
+    };
+
+    this.moodEntries.push(moodEntry);
+    return moodEntry;
+  }
+
+  async getMoodEntriesByUserId(userId: string): Promise<DemoMoodEntry[]> {
+    return this.moodEntries.filter(mood => mood.userId === userId);
+  }
+
+  // Crisis alert operations
+  async saveCrisisAlert(crisisData: {
+    riskLevel: 'low' | 'medium' | 'high';
+    triggerData: any;
+    userId: string;
+  }): Promise<DemoCrisisAlert> {
+    const crisisAlert: DemoCrisisAlert = {
+      id: uuidv4(),
+      ...crisisData,
+      resolved: false,
+      timestamp: new Date(),
+    };
+
+    this.crisisAlerts.push(crisisAlert);
+    return crisisAlert;
+  }
+
+  async getCrisisAlertsByUserId(userId: string): Promise<DemoCrisisAlert[]> {
+    return this.crisisAlerts.filter(alert => alert.userId === userId);
   }
 
   // Initialize with demo user
