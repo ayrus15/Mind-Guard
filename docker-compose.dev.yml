@@ -1,0 +1,70 @@
+# Development docker-compose for local development
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: mindguard-postgres-dev
+    environment:
+      POSTGRES_DB: mindguard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - mindguard-dev-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: mindguard-backend-dev
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: mindguard
+      DB_USER: postgres
+      DB_PASSWORD: password
+      JWT_SECRET: dev-jwt-secret
+      JWT_REFRESH_SECRET: dev-refresh-secret
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+    networks:
+      - mindguard-dev-network
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: mindguard-frontend-dev
+    environment:
+      VITE_API_URL: http://localhost:5000
+      VITE_SOCKET_URL: http://localhost:5000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - mindguard-dev-network
+    command: npm run dev
+
+networks:
+  mindguard-dev-network:
+    driver: bridge
+
+volumes:
+  postgres_data_dev:

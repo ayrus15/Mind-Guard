@@ -114,3 +114,11 @@ Thumbs.db
 # Database
 *.db
 *.sqlite
+
+# Docker
+.dockerignore
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
