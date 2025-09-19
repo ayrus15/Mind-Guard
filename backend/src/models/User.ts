@@ -1,6 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Conversation } from './Conversation';
 import { Emotion } from './Emotion';
+import { MoodEntry } from './MoodEntry';
+import { CrisisAlert } from './CrisisAlert';
 
 @Entity('users')
 export class User {
@@ -34,4 +36,10 @@ export class User {
 
   @OneToMany(() => Emotion, emotion => emotion.user)
   emotions!: Emotion[];
+
+  @OneToMany(() => MoodEntry, moodEntry => moodEntry.user)
+  moodEntries!: MoodEntry[];
+
+  @OneToMany(() => CrisisAlert, crisisAlert => crisisAlert.user)
+  crisisAlerts!: CrisisAlert[];
 }

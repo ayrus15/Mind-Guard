@@ -7,6 +7,9 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { initializeDatabase } from './config/database';
 import authRoutes from './routes/auth';
+import moodRoutes from './routes/mood';
+import crisisRoutes from './routes/crisis';
+import analyticsRoutes from './routes/analytics';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { setupChatNamespace } from './controllers/chatController';
 import { setupEmotionNamespace } from './controllers/emotionController';
@@ -41,6 +44,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/mood', moodRoutes);
+app.use('/crisis', crisisRoutes);
+app.use('/analytics', analyticsRoutes);
 
 // Error handling
 app.use(notFound);
