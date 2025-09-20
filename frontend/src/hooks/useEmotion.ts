@@ -298,6 +298,7 @@ export const useEmotion = (videoRef?: React.RefObject<HTMLVideoElement | null>):
         }
       } else {
         console.log('No faces detected in frame');
+        // Set neutral emotion when no faces detected, instead of null
         setCurrentEmotion({ emotion: 'neutral', confidence: 0.2 });
       }
     } catch (err) {
