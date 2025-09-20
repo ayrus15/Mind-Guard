@@ -20,40 +20,115 @@ interface UseEmotionReturn {
   isConnected: boolean;
 }
 
-// Simple emotion classification based on facial landmarks
+// Improved emotion classification based on facial landmarks
 const classifyEmotion = (landmarks: any): EmotionPrediction => {
-  // This is a simplified emotion detection algorithm
-  // In a real-world scenario, you'd use a trained neural network
+  // This is an enhanced emotion detection algorithm using proper MediaPipe landmarks
   
   if (!landmarks || landmarks.length === 0) {
+    console.log('No landmarks detected');
     return { emotion: 'neutral', confidence: 0.5 };
   }
 
-  // Get key facial points
-  const leftEye = landmarks[0].keypoints.slice(33, 42);
-  const rightEye = landmarks[0].keypoints.slice(362, 374);
-  const mouth = landmarks[0].keypoints.slice(61, 68);
-  
-  // Calculate basic features
-  const leftEyeHeight = Math.abs(leftEye[1].y - leftEye[5].y);
-  const rightEyeHeight = Math.abs(rightEye[1].y - rightEye[5].y);
-  const mouthHeight = Math.abs(mouth[1].y - mouth[5].y);
-  const mouthWidth = Math.abs(mouth[0].x - mouth[6].x);
-  
-  const avgEyeHeight = (leftEyeHeight + rightEyeHeight) / 2;
-  const mouthRatio = mouthHeight / mouthWidth;
-  
-  // Simple emotion classification rules
-  if (mouthRatio > 0.5 && avgEyeHeight > 10) {
-    return { emotion: 'happy', confidence: 0.8 };
-  } else if (mouthRatio < 0.3 && avgEyeHeight < 8) {
-    return { emotion: 'sad', confidence: 0.7 };
-  } else if (avgEyeHeight < 6) {
-    return { emotion: 'tired', confidence: 0.6 };
-  } else if (mouthRatio > 0.6) {
-    return { emotion: 'surprised', confidence: 0.7 };
-  } else {
-    return { emotion: 'neutral', confidence: 0.6 };
+  const keypoints = landmarks[0].keypoints;
+  if (!keypoints || keypoints.length < 468) {
+    console.log('Insufficient keypoints:', keypoints?.length);
+    return { emotion: 'neutral', confidence: 0.4 };
+  }
+
+  try {
+    // MediaPipe Face Mesh landmark indices for key facial features
+    const leftEyeCenter = keypoints[159];   // Left eye center
+    const rightEyeCenter = keypoints[386];  // Right eye center
+    const leftEyeTop = keypoints[159];      // Left eye top
+    const leftEyeBottom = keypoints[145];   // Left eye bottom
+    const rightEyeTop = keypoints[386];     // Right eye top  
+    const rightEyeBottom = keypoints[374];  // Right eye bottom
+    
+    const leftMouthCorner = keypoints[61];  // Left mouth corner
+    const rightMouthCorner = keypoints[291]; // Right mouth corner
+    const upperLip = keypoints[13];         // Upper lip center
+    const lowerLip = keypoints[14];         // Lower lip center
+    
+    const leftEyebrow = keypoints[70];      // Left eyebrow
+    const rightEyebrow = keypoints[300];    // Right eyebrow
+
+    // Validate that we have all required points
+    const requiredPoints = [leftEyeCenter, rightEyeCenter, leftEyeTop, leftEyeBottom, 
+                           rightEyeTop, rightEyeBottom, leftMouthCorner, rightMouthCorner, 
+                           upperLip, lowerLip, leftEyebrow, rightEyebrow];
+    
+    if (requiredPoints.some(point => !point || typeof point.x !== 'number' || typeof point.y !== 'number')) {
+      console.log('Invalid landmark points detected');
+      return { emotion: 'neutral', confidence: 0.3 };
+    }
+
+    // Calculate facial features for emotion detection
+    const leftEyeHeight = Math.abs(leftEyeTop.y - leftEyeBottom.y);
+    const rightEyeHeight = Math.abs(rightEyeTop.y - rightEyeBottom.y);
+    const avgEyeHeight = (leftEyeHeight + rightEyeHeight) / 2;
+    
+    const mouthWidth = Math.abs(leftMouthCorner.x - rightMouthCorner.x);
+    const mouthHeight = Math.abs(upperLip.y - lowerLip.y);
+    const mouthRatio = mouthWidth > 0 ? mouthHeight / mouthWidth : 0;
+    
+    // Calculate mouth curvature (smile detection)
+    const mouthCenterY = (upperLip.y + lowerLip.y) / 2;
+    const leftCornerRelative = leftMouthCorner.y - mouthCenterY;
+    const rightCornerRelative = rightMouthCorner.y - mouthCenterY;
+    const mouthCurvature = (leftCornerRelative + rightCornerRelative) / 2;
+    
+    // Calculate eyebrow position (relative to eyes)
+    const leftEyebrowDistance = leftEyebrow.y - leftEyeCenter.y;
+    const rightEyebrowDistance = rightEyebrow.y - rightEyeCenter.y;
+    const avgEyebrowDistance = (leftEyebrowDistance + rightEyebrowDistance) / 2;
+
+    // Debug logging
+    console.log('Emotion detection features:', {
+      avgEyeHeight: avgEyeHeight.toFixed(2),
+      mouthRatio: mouthRatio.toFixed(3),
+      mouthCurvature: mouthCurvature.toFixed(2),
+      avgEyebrowDistance: avgEyebrowDistance.toFixed(2),
+      mouthWidth: mouthWidth.toFixed(2),
+      mouthHeight: mouthHeight.toFixed(2)
+    });
+
+    // Improved emotion classification rules
+    let emotion = 'neutral';
+    let confidence = 0.6;
+
+    // Happy: Mouth corners raised (negative curvature) and wider mouth
+    if (mouthCurvature < -2 && mouthRatio > 0.03) {
+      emotion = 'happy';
+      confidence = Math.min(0.9, 0.6 + Math.abs(mouthCurvature) * 0.05);
+    }
+    // Sad: Mouth corners lowered (positive curvature) and smaller eye height
+    else if (mouthCurvature > 1 && avgEyeHeight < 8) {
+      emotion = 'sad';
+      confidence = Math.min(0.8, 0.5 + mouthCurvature * 0.05);
+    }
+    // Surprised: Large eye height and open mouth
+    else if (avgEyeHeight > 12 && mouthRatio > 0.05) {
+      emotion = 'surprised';
+      confidence = Math.min(0.85, 0.6 + (avgEyeHeight - 12) * 0.02);
+    }
+    // Angry: Lowered eyebrows and tense mouth
+    else if (avgEyebrowDistance < -5 && mouthRatio < 0.02) {
+      emotion = 'angry';
+      confidence = Math.min(0.8, 0.6 + Math.abs(avgEyebrowDistance) * 0.02);
+    }
+    // Tired: Small eye height
+    else if (avgEyeHeight < 5) {
+      emotion = 'tired';
+      confidence = Math.min(0.75, 0.5 + (5 - avgEyeHeight) * 0.05);
+    }
+
+    console.log(`Detected emotion: ${emotion} (confidence: ${(confidence * 100).toFixed(1)}%)`);
+    
+    return { emotion, confidence };
+
+  } catch (error) {
+    console.error('Error in emotion classification:', error);
+    return { emotion: 'neutral', confidence: 0.3 };
   }
 };
 
@@ -136,35 +211,85 @@ export const useEmotion = (videoRef?: React.RefObject<HTMLVideoElement | null>):
 
   const startVideoStream = async () => {
     try {
+      console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480 }
+        video: { 
+          width: { ideal: 640 }, 
+          height: { ideal: 480 },
+          facingMode: 'user' // Use front camera
+        }
       });
 
       if (videoRef?.current) {
         videoRef.current.srcObject = stream;
+        
+        // Wait for video to be ready
+        await new Promise<void>((resolve, reject) => {
+          const video = videoRef.current!;
+          
+          const onLoadedData = () => {
+            console.log('Video stream ready:', {
+              width: video.videoWidth,
+              height: video.videoHeight,
+              readyState: video.readyState
+            });
+            video.removeEventListener('loadeddata', onLoadedData);
+            video.removeEventListener('error', onError);
+            resolve();
+          };
+          
+          const onError = (err: Event) => {
+            console.error('Video loading error:', err);
+            video.removeEventListener('loadeddata', onLoadedData);
+            video.removeEventListener('error', onError);
+            reject(new Error('Video failed to load'));
+          };
+          
+          video.addEventListener('loadeddata', onLoadedData);
+          video.addEventListener('error', onError);
+        });
+
         await videoRef.current.play();
+        console.log('Video playback started successfully');
       }
 
       return stream;
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Failed to access camera');
+      setError('Failed to access camera: ' + (err as Error).message);
       throw err;
     }
   };
 
   const detectEmotions = async () => {
-    if (!detectorRef.current || !videoRef?.current || !user) return;
+    if (!detectorRef.current || !videoRef?.current || !user) {
+      console.log('Detection requirements not met:', {
+        detector: !!detectorRef.current,
+        video: !!videoRef?.current,
+        user: !!user
+      });
+      return;
+    }
 
     try {
-      const predictions = await detectorRef.current.estimateFaces(videoRef?.current);
+      // Ensure video is ready
+      if (videoRef.current.readyState < 2) {
+        console.log('Video not ready, readyState:', videoRef.current.readyState);
+        return;
+      }
+
+      console.log('Starting face detection...');
+      const predictions = await detectorRef.current.estimateFaces(videoRef.current);
+      console.log('Face detection result:', predictions?.length || 0, 'faces detected');
       
       if (predictions && predictions.length > 0) {
+        console.log('Processing landmarks for emotion detection...');
         const emotion = classifyEmotion(predictions);
         setCurrentEmotion(emotion);
 
-        // Send emotion data to backend (throttled to every 2 seconds)
+        // Send emotion data to backend (throttled to reduce spam)
         if (socketRef.current && Math.random() < 0.1) { // 10% chance to reduce spam
+          console.log('Sending emotion data to backend:', emotion);
           socketRef.current.emit('emotion_data', {
             emotion: emotion.emotion,
             confidence: emotion.confidence,
@@ -172,10 +297,13 @@ export const useEmotion = (videoRef?: React.RefObject<HTMLVideoElement | null>):
           });
         }
       } else {
-        setCurrentEmotion(null);
+        console.log('No faces detected in frame');
+        // Set neutral emotion when no faces detected, instead of null
+        setCurrentEmotion({ emotion: 'neutral', confidence: 0.2 });
       }
     } catch (err) {
       console.error('Error detecting emotions:', err);
+      setError('Emotion detection failed: ' + (err as Error).message);
     }
   };
 

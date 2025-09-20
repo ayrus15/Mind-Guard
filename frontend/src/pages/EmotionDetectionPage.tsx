@@ -197,6 +197,35 @@ const ErrorMessage = styled.div`
   border-left: 4px solid #e74c3c;
 `;
 
+const DebugSection = styled.div`
+  grid-column: 1 / -1;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 2rem;
+`;
+
+const DebugTitle = styled.h3`
+  color: #495057;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+`;
+
+const DebugGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.5rem;
+`;
+
+const DebugItem = styled.div`
+  padding: 0.5rem;
+  background: white;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  border: 1px solid #e9ecef;
+`;
+
 const EmotionDetectionPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const {
@@ -348,6 +377,32 @@ const EmotionDetectionPage: React.FC = () => {
           </p>
         )}
       </HistorySection>
+
+      {/* Debug Panel for Development */}
+      {process.env.NODE_ENV === 'development' && (
+        <DebugSection>
+          <DebugTitle>Debug Information</DebugTitle>
+          <DebugGrid>
+            <DebugItem>
+              <strong>Detection Status:</strong> {isDetecting ? 'Active' : 'Inactive'}
+            </DebugItem>
+            <DebugItem>
+              <strong>Connection:</strong> {isConnected ? 'Connected' : 'Disconnected'}
+            </DebugItem>
+            <DebugItem>
+              <strong>Current Emotion:</strong> {currentEmotion ? 
+                `${currentEmotion.emotion} (${(currentEmotion.confidence * 100).toFixed(1)}%)` : 
+                'None'}
+            </DebugItem>
+            <DebugItem>
+              <strong>Error:</strong> {error || 'None'}
+            </DebugItem>
+          </DebugGrid>
+          <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#666' }}>
+            Check browser console for detailed emotion detection logs including facial feature calculations.
+          </div>
+        </DebugSection>
+      )}
     </Container>
   );
 };
