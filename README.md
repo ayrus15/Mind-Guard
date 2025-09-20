@@ -8,7 +8,7 @@ A comprehensive mental health support platform powered by AI, featuring real-tim
 ## 🌟 Features
 
 ### Core Functionality
-- **AI-Powered Chatbot**: CBT-based conversational support with sentiment analysis
+- **AI-Powered Chatbot**: Advanced Groq AI integration with CBT-based conversational support and sentiment analysis
 - **Real-time Emotion Detection**: Webcam-based emotion recognition using TensorFlow.js
 - **User Authentication**: Secure JWT-based authentication with refresh tokens
 - **Real-time Communication**: WebSocket-powered chat and emotion data streaming
@@ -41,6 +41,7 @@ A comprehensive mental health support platform powered by AI, featuring real-tim
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js
 - **Database**: PostgreSQL with TypeORM
+- **AI Integration**: Groq API with advanced mental health prompting
 - **Authentication**: JWT with bcrypt
 - **Real-time**: Socket.io
 - **Validation**: Express Validator

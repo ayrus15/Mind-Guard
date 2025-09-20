@@ -168,6 +168,14 @@ export class GroqAIService {
 
   constructor() {
     this.groqClient = groq;
+    
+    // Validate API key on initialization
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey || apiKey === 'your-groq-api-key-here') {
+      console.warn('⚠️  Groq API key not properly configured. Fallback responses will be used.');
+    } else {
+      console.log('✅ Groq AI service initialized successfully');
+    }
   }
 
   /**
@@ -219,7 +227,17 @@ export class GroqAIService {
       };
 
     } catch (error) {
-      console.error('❌ Groq AI Error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('❌ Groq AI Error:', errorMessage);
+      
+      // Check if it's an API key issue
+      if (errorMessage.includes('401') || errorMessage.includes('unauthorized') || errorMessage.includes('authentication')) {
+        console.error('🔑 API Authentication Error: Please check your GROQ_API_KEY in the .env file');
+      } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+        console.error('🚦 Rate Limit Error: Groq API rate limit exceeded');
+      } else if (errorMessage.includes('network') || errorMessage.includes('ENOTFOUND')) {
+        console.error('🌐 Network Error: Unable to connect to Groq API');
+      }
       
       // Fallback to local response
       return this.getFallbackResponse(message, userContext, sentimentScore);
@@ -230,8 +248,8 @@ export class GroqAIService {
    * Assess risk level based on message content and sentiment
    */
   private assessRiskLevel(message: string, sentimentScore?: number): 'low' | 'medium' | 'high' {
-    // High risk indicators
-    const highRiskKeywords = /suicidal|suicide|kill myself|end it all|want to die|tonight|today|plan to|ready to/i;
+    // High risk indicators - be more specific to avoid false positives
+    const highRiskKeywords = /suicidal|suicide|kill myself|end it all|want to die|want to end my life|plan to (die|kill|suicide)|ready to die/i;
     const mediumRiskKeywords = /harm myself|hurt myself|can't go on|no point|hopeless|worthless|give up/i;
 
     if (highRiskKeywords.test(message)) {
