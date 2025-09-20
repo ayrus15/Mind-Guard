@@ -7,22 +7,30 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100%;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 `;
 
 const Header = styled.div`
   background: white;
-  padding: 1rem 2rem;
+  padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  @media (min-width: 768px) {
+    padding: 1rem 2rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 
 const Title = styled.h1`
   color: #333;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
 `;
 
 const ConnectionStatus = styled.div<{ connected: boolean }>`
@@ -31,6 +39,7 @@ const ConnectionStatus = styled.div<{ connected: boolean }>`
   gap: 0.5rem;
   color: ${props => props.connected ? '#27ae60' : '#e74c3c'};
   font-weight: 600;
+  font-size: clamp(0.8rem, 2vw, 1rem);
 `;
 
 const StatusDot = styled.div<{ connected: boolean }>`
@@ -47,7 +56,11 @@ const ChatContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
-  padding: 1rem;
+  padding: 0.5rem;
+  
+  @media (min-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const MessagesContainer = styled.div`

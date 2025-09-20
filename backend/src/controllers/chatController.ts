@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { AppDataSource } from '../config/database';
 import { Conversation } from '../models/Conversation';
 import { generateCBTResponse } from '../utils/chatbot';
+import { generateGroqResponse } from '../utils/groq-ai-service';
 import { analyzeSentiment } from '../utils/sentiment';
 import { demoStorage } from '../utils/demoStorage';
 
@@ -34,8 +35,37 @@ export const setupChatNamespace = (io: Server) => {
         // Analyze sentiment
         const sentimentScore = await analyzeSentiment(data.message);
 
-        // Generate CBT-based response
-        const response = await generateCBTResponse(data.message, sentimentScore);
+        // Get conversation history
+        let conversationHistory: Array<{message: string, response: string}> = [];
+        
+        if (isDatabaseConnected()) {
+          // Get last 10 conversations from database
+          const recentConversations = await conversationRepository.find({
+            where: { userId: data.userId },
+            order: { timestamp: 'DESC' },
+            take: 10
+          });
+          conversationHistory = recentConversations.reverse().map(conv => ({
+            message: conv.message,
+            response: conv.response
+          }));
+        } else {
+          // Get from demo storage
+          conversationHistory = await demoStorage.getConversationHistory(data.userId);
+        }
+
+        // Generate AI response using Groq with enhanced mental health capabilities
+        const groqResponse = await generateGroqResponse(
+          data.message, 
+          data.userId,
+          {
+            conversationHistory: conversationHistory,
+            currentMood: sentimentScore > 0.1 ? 'positive' : sentimentScore < -0.1 ? 'negative' : 'neutral'
+          },
+          sentimentScore
+        );
+
+        const response = groqResponse.response;
 
         let conversation;
 

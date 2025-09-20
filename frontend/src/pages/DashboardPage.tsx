@@ -8,50 +8,83 @@ import api from '../services/api';
 
 const Container = styled.div`
   min-height: 100vh;
+  width: 100%;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 2rem;
+  padding: 1rem;
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 3rem;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+  }
 `;
 
 const Title = styled.h1`
   color: #333;
-  font-size: 2.5rem;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
   margin: 0;
 `;
 
 const UserGreeting = styled.div`
   color: #666;
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2vw, 1.1rem);
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
+  
+  @media (min-width: 768px) {
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
 `;
 
 const AnalyticsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
   max-width: 1400px;
   margin: 2rem auto;
+  
+  @media (min-width: 768px) {
+    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  }
 `;
 
 const WidgetCard = styled.div`
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
+  width: 100%;
+  
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -61,11 +94,11 @@ const WidgetCard = styled.div`
 const WidgetTitle = styled.h3`
   color: #333;
   margin-bottom: 1rem;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.2rem);
 `;
 
 const StatValue = styled.div`
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
   color: #3498db;
   margin-bottom: 0.5rem;
@@ -73,22 +106,31 @@ const StatValue = styled.div`
 
 const StatLabel = styled.div`
   color: #666;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
 `;
 
 const ChartContainer = styled.div`
   width: 100%;
-  height: 300px;
+  height: 250px;
   margin-top: 1rem;
+  
+  @media (min-width: 768px) {
+    height: 300px;
+  }
 `;
 
 const Card = styled.div`
   background: white;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s;
   text-align: center;
+  width: 100%;
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
 
   &:hover {
     transform: translateY(-5px);
@@ -96,7 +138,7 @@ const Card = styled.div`
 `;
 
 const CardIcon = styled.div`
-  font-size: 3rem;
+  font-size: clamp(2rem, 5vw, 3rem);
   margin-bottom: 1rem;
 `;
 

@@ -14,6 +14,7 @@ const schema = yup.object({
 
 const Container = styled.div`
   min-height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,18 +24,22 @@ const Container = styled.div`
 
 const FormCard = styled.div`
   background: white;
-  padding: 2.5rem;
+  padding: 1.5rem;
   border-radius: 1rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
+  
+  @media (min-width: 768px) {
+    padding: 2.5rem;
+  }
 `;
 
 const Title = styled.h1`
   text-align: center;
   margin-bottom: 2rem;
   color: #333;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
 `;
 
 const Form = styled.form`

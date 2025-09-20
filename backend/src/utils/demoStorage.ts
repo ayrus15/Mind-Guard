@@ -178,6 +178,18 @@ class DemoStorage {
     return this.crisisAlerts.filter(alert => alert.userId === userId);
   }
 
+  async getConversationHistory(userId: string, limit: number = 10): Promise<Array<{message: string, response: string}>> {
+    return this.conversations
+      .filter(conv => conv.userId === userId)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit)
+      .reverse()
+      .map(conv => ({
+        message: conv.message,
+        response: conv.response
+      }));
+  }
+
   // Initialize with demo user
   async initializeDemo() {
     const demoUser = await this.createUser({

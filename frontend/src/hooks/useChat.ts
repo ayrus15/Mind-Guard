@@ -53,8 +53,8 @@ export const useChat = (): UseChatReturn => {
         {
           ...data,
           id: `user-${data.id}`,
-          response: data.message,
           message: data.message,
+          response: data.message,
           isUser: true,
         },
       ]);
